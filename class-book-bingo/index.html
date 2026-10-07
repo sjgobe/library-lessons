@@ -1,0 +1,214 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class Book Bingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=Special+Elite&family=Caveat:wght@700&display=swap">
+<style>
+/* Layout: a card-catalog drawer. Dark oak desk, nine catalog cards, a typed prompt strip on top.
+   One deliberate look for screen sharing, so it stays the same in light and dark themes. */
+:root{
+  color-scheme:dark;
+  --desk:#2A1D15; --desk-2:#3A2A1F; --paper:#FBF4E2; --paper-2:#F2E7CB; --rule:#D9C9A3;
+  --ink:#1E1A16; --muted:#6E604A; --pen:#1F3F93; --stamp:#C2372B; --brass:#E2B04A; --good:#2E7D4F;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --type:"Special Elite","Courier New",ui-monospace,monospace;
+  --hand:"Caveat","Comic Sans MS","Segoe Print",cursive;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--desk);background-image:repeating-linear-gradient(92deg,rgba(255,255,255,.018) 0 3px,transparent 3px 11px),linear-gradient(var(--desk),var(--desk-2));color:var(--paper);font-family:var(--body);font-size:18px;line-height:1.4}
+.app{max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:18px 40px;display:grid;gap:16px}
+
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand svg{flex:none}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1;margin:0;letter-spacing:-.01em;color:var(--paper)}
+.sub{margin:4px 0 0;font-family:var(--type);font-size:.95rem;color:var(--brass)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.tbtn{font:inherit;font-size:.92rem;font-weight:700;border:2px solid var(--brass);background:transparent;color:var(--paper);border-radius:10px;padding:8px 14px;cursor:pointer}
+.tbtn:hover{background:rgba(226,176,74,.16)}
+.tbtn.on{background:var(--brass);color:var(--ink)}
+.tbtn.warn{border-color:var(--stamp)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,.card:focus-visible{outline:4px solid var(--brass);outline-offset:3px}
+
+/* prompt strip */
+.strip{background:var(--paper);color:var(--ink);border-radius:6px;padding:16px clamp(16px,3vw,28px);display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px 28px;align-items:center;box-shadow:0 8px 0 rgba(0,0,0,.25);background-image:linear-gradient(transparent 0 calc(100% - 3px),var(--stamp) calc(100% - 3px))}
+.ask{min-width:0}
+.ask .lead{font-family:var(--type);font-size:1rem;color:var(--muted);margin:0 0 2px}
+.ask .lead b{font-family:var(--display);font-weight:800;color:var(--stamp);font-size:1.15em;background:var(--paper-2);border-radius:6px;padding:0 8px}
+.ask .now{font-family:var(--display);font-weight:800;font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:1.08;margin:0;text-wrap:balance}
+.adder{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adder label{font-family:var(--type);font-size:.85rem;color:var(--muted);flex-basis:100%}
+.adder input{font:inherit;font-size:1.05rem;flex:1;min-width:0;width:auto;padding:10px 12px;border:2px solid var(--rule);border-radius:8px;background:#fff;color:var(--ink)}
+.adder .add{font:inherit;font-weight:800;border:0;background:var(--pen);color:#fff;border-radius:8px;padding:11px 18px;cursor:pointer}
+@media (max-width:760px){.strip{grid-template-columns:1fr}}
+
+/* board */
+.meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-family:var(--type);color:var(--brass)}
+.meter{display:flex;gap:6px}
+.meter i{width:22px;height:10px;border-radius:2px;background:rgba(251,244,226,.18)}
+.meter i.f{background:var(--brass)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.6vw,18px)}
+@media (max-width:560px){.board{grid-template-columns:1fr}}
+.card{position:relative;min-width:0;background:var(--paper);color:var(--ink);border-radius:4px;padding:12px 14px 30px;min-height:clamp(130px,19vh,210px);cursor:pointer;
+  background-image:linear-gradient(var(--paper),var(--paper)),repeating-linear-gradient(transparent 0 27px,var(--rule) 27px 28px);background-size:100% 46px,100% 100%;background-repeat:no-repeat,repeat;background-position:0 0,0 18px;
+  box-shadow:0 6px 0 rgba(0,0,0,.28);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column;gap:8px}
+.card::after{content:"";position:absolute;left:50%;bottom:9px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--desk-2);box-shadow:inset 0 2px 3px rgba(0,0,0,.5)}
+.card:hover{transform:translateY(-2px)}
+.card.sel{transform:translateY(-6px);box-shadow:0 0 0 5px var(--brass),0 12px 0 rgba(0,0,0,.3)}
+.card .no{font-family:var(--type);font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between;border-bottom:2px solid var(--stamp);padding-bottom:4px}
+.card .q{font-family:var(--display);font-weight:700;font-size:clamp(1.05rem,1.7vw,1.35rem);line-height:1.15;margin:0;text-wrap:balance}
+.card textarea{font:inherit;font-family:var(--display);font-weight:700;font-size:1.1rem;width:100%;min-height:72px;border:2px dashed var(--stamp);border-radius:6px;background:#fff;color:var(--ink);padding:6px 8px;resize:vertical}
+.names{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}
+.chip{font-family:var(--hand);font-weight:700;font-size:clamp(1.35rem,2.2vw,1.75rem);line-height:1.1;color:var(--pen);background:none;border:0;padding:0 2px;cursor:pointer;border-radius:4px}
+.chip:hover{text-decoration:line-through;text-decoration-color:var(--stamp)}
+.stamp{position:absolute;right:12px;bottom:12px;font-family:var(--type);font-size:.95rem;letter-spacing:.08em;color:var(--stamp);border:3px solid var(--stamp);border-radius:6px;padding:2px 8px;transform:rotate(-9deg);opacity:.82;pointer-events:none;background:rgba(251,244,226,.6)}
+.hint{font-family:var(--type);font-size:.85rem;color:rgba(251,244,226,.72);margin:0;text-align:center}
+
+/* bingo */
+.win{position:fixed;inset:0;display:grid;place-items:center;padding:16px;background:rgba(20,13,9,.82);z-index:10}
+.winbox{background:var(--paper);color:var(--ink);border-radius:8px;padding:clamp(22px,4vw,40px);max-width:680px;width:100%;text-align:center;display:grid;gap:12px;justify-items:center}
+.big{font-family:var(--type);font-size:clamp(3.4rem,11vw,6.5rem);line-height:1;color:var(--stamp);border:8px solid var(--stamp);border-radius:14px;padding:6px 26px 10px;transform:rotate(-6deg);animation:slam .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes slam{from{transform:rotate(-6deg) scale(2.4);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+.winbox h2{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,3vw,2rem);margin:10px 0 0;text-wrap:balance}
+.winbox p{margin:0;max-width:52ch}
+.crew{font-family:var(--hand);font-weight:700;font-size:1.6rem;color:var(--pen);line-height:1.2}
+.winbox .add{font:inherit;font-weight:800;border:0;background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 20px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head><body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg width="52" height="46" viewBox="0 0 52 46" aria-hidden="true"><rect x="2" y="12" width="48" height="32" rx="3" fill="#E2B04A"/><rect x="8" y="2" width="36" height="22" rx="2" fill="#FBF4E2"/><path d="M13 9h26M13 14h18" stroke="#C2372B" stroke-width="2.5"/><rect x="18" y="26" width="16" height="7" rx="3" fill="#2A1D15"/></svg>
+      <div><h1>Class Book Bingo</h1><p class="sub">Grade 6 Library · Fill all 9 cards together</p></div>
+    </div>
+    <div class="tools">
+      <button type="button" class="tbtn" id="random">Pick a square for me</button>
+      <button type="button" class="tbtn" id="edit">Edit squares</button>
+      <button type="button" class="tbtn warn" id="reset">New game</button>
+    </div>
+  </header>
+
+  <section class="strip" aria-live="polite">
+    <div class="ask">
+      <p class="lead">Type <b>me</b> in the chat if this is you:</p>
+      <p class="now" id="now"></p>
+    </div>
+    <form class="adder" id="adder">
+      <label for="who">Names from the chat (commas for several)</label>
+      <input id="who" type="text" autocomplete="off" placeholder="Maya, Leo, Sam">
+      <button type="submit" class="add">Add</button>
+    </form>
+  </section>
+
+  <div class="meta"><span id="count"></span><span class="meter" id="meter" aria-hidden="true"></span></div>
+  <div class="board" id="board"></div>
+  <p class="hint">Click a card to read it next. Click a name to remove it.</p>
+</div>
+
+<div class="win" id="win" hidden>
+  <div class="winbox" role="dialog" aria-labelledby="wintitle">
+    <div class="big">BINGO!</div>
+    <h2 id="wintitle">Every card has a reader. Nice work, Grade 6!</h2>
+    <p id="wintext"></p>
+    <div class="crew" id="crew"></div>
+    <button type="button" class="add" id="close">Back to the board</button>
+  </div>
+</div>
+
+<script>
+(function(){
+const DEFAULTS = [
+  "Has read a book more than once",
+  "Likes graphic novels",
+  "Has stayed up too late reading",
+  "Would rather read on paper than on a screen",
+  "Has read a book that became a movie",
+  "Is in the middle of a book on Sora right now",
+  "Likes mysteries",
+  "Has almost cried at a book",
+  "Has a book they gave up on"
+];
+const KEY = "class-book-bingo-v1";
+const fresh = () => ({ prompts: DEFAULTS.slice(), names: DEFAULTS.map(() => []), sel: 0, editing: false, celebrated: false });
+let S = fresh();
+try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && Array.isArray(s.prompts) && s.prompts.length === 9) S = Object.assign(fresh(), s, { editing:false }); } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const filled = () => S.names.filter(n => n.length).length;
+
+function render(){
+  $("now").textContent = S.prompts[S.sel];
+  const f = filled();
+  $("count").textContent = f === 9 ? "All 9 cards filled!" : `${f} of 9 cards filled`;
+  $("meter").innerHTML = S.names.map(n => `<i class="${n.length?'f':''}"></i>`).join("");
+  $("edit").classList.toggle("on", S.editing);
+  $("edit").textContent = S.editing ? "Done editing" : "Edit squares";
+  $("board").innerHTML = S.prompts.map((p, i) => `
+    <div class="card ${i===S.sel?'sel':''}" data-i="${i}" tabindex="0" role="button" aria-pressed="${i===S.sel}" aria-label="Card ${i+1}: ${esc(p)}">
+      <div class="no"><span>No. ${i+1}</span><span>${S.names[i].length ? S.names[i].length + (S.names[i].length===1?' reader':' readers') : 'Find a reader'}</span></div>
+      ${S.editing ? `<textarea id="edit-${i}" data-e="${i}" aria-label="Text for card ${i+1}">${esc(p)}</textarea>` : `<p class="q">${esc(p)}</p>`}
+      <div class="names">${S.names[i].map((n, k) => `<button type="button" class="chip" data-c="${i}:${k}" aria-label="Remove ${esc(n)}">${esc(n)}</button>`).join("")}</div>
+      ${S.names[i].length ? '<span class="stamp" aria-hidden="true">FOUND</span>' : ''}
+    </div>`).join("");
+}
+
+function select(i){ S.sel = i; save(); render(); if (!S.editing) $("who").focus({preventScroll:true}); }
+
+$("board").addEventListener("click", e => {
+  const chip = e.target.closest("[data-c]");
+  if (chip) { const [i,k] = chip.dataset.c.split(":").map(Number); S.names[i].splice(k,1); if (filled() < 9) S.celebrated = false; save(); render(); return; }
+  if (e.target.closest("textarea")) return;
+  const card = e.target.closest(".card"); if (card) select(+card.dataset.i);
+});
+$("board").addEventListener("keydown", e => {
+  const card = e.target.closest(".card");
+  if (card && e.target === card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); select(+card.dataset.i); }
+});
+$("board").addEventListener("input", e => {
+  const t = e.target.closest("[data-e]"); if (!t) return;
+  S.prompts[+t.dataset.e] = t.value; save();
+  if (+t.dataset.e === S.sel) $("now").textContent = t.value;
+});
+
+$("adder").addEventListener("submit", e => {
+  e.preventDefault();
+  const list = $("who").value.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+  if (!list.length) return;
+  const have = S.names[S.sel].map(n => n.toLowerCase());
+  list.forEach(n => { n = n.split(/\s+/)[0]; if (!have.includes(n.toLowerCase())) { S.names[S.sel].push(n); have.push(n.toLowerCase()); } });
+  $("who").value = ""; save(); render(); $("who").focus({preventScroll:true});
+  if (filled() === 9 && !S.celebrated) { S.celebrated = true; save(); showWin(); }
+});
+
+function showWin(){
+  const all = [...new Set(S.names.flat().map(n => n.toLowerCase()))];
+  const pretty = all.map(n => n.charAt(0).toUpperCase() + n.slice(1));
+  $("wintext").textContent = `${pretty.length} readers made it onto the board. Look how much this class has in common!`;
+  $("crew").textContent = pretty.join(" · ");
+  $("win").hidden = false; $("close").focus();
+}
+$("close").onclick = () => { $("win").hidden = true; };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("win").hidden) $("win").hidden = true; });
+
+$("random").onclick = () => {
+  const open = S.names.map((n,i) => n.length ? -1 : i).filter(i => i >= 0 && i !== S.sel);
+  const pool = open.length ? open : [0,1,2,3,4,5,6,7,8].filter(i => i !== S.sel);
+  select(pool[Math.floor(Math.random() * pool.length)]);
+};
+$("edit").onclick = () => { S.editing = !S.editing; render(); };
+const r = $("reset");
+r.onclick = () => {
+  if (r.dataset.confirm) { const keep = S.prompts; S = fresh(); S.prompts = keep; save(); delete r.dataset.confirm; r.textContent = "New game"; render(); return; }
+  r.dataset.confirm = "1"; r.textContent = "Click again to clear names";
+  setTimeout(() => { delete r.dataset.confirm; r.textContent = "New game"; }, 4000);
+};
+
+render();
+})();
+</script>
+</body></html>
