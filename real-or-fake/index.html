@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Real or Fake?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=Atkinson+Hyperlegible:wght@400;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap">
+<style>
+:root{color-scheme:light;--ground:#ECEEF4;--panel:#FFFFFF;--ink:#1B1F33;--muted:#555B75;--line:#D3D7E4;--accent:#E4572E;--focus:#E4572E;--good:#12806F;--bad:#C2410C;--soft-a:#FDE6DE;--soft-b:#D9F1EC;--soft-c:#F2F3F8;--radius:16px;--display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:18px 60px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand h1{font-family:var(--display);font-weight:700;font-size:1.55rem;line-height:1.1;margin:0}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+#restart{font:inherit;font-size:.82rem;font-weight:700;background:transparent;border:0;color:var(--muted);cursor:pointer;text-decoration:underline}
+#progress{display:flex;align-items:center;gap:12px;margin:16px 0 10px;font-weight:700;font-size:.85rem;color:var(--muted)}
+.pbar{flex:1;height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar div{height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+#card{background:var(--panel);border-radius:var(--radius);padding:26px clamp(18px,4vw,34px)}
+.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.eyebrow{display:block;font-weight:800;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(1.6rem,4.5vw,2.2rem);line-height:1.12;margin:4px 0 14px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:1.25rem;margin:18px 0 6px}
+p{margin:0 0 12px}
+.listen{font:inherit;font-size:.85rem;font-weight:700;border:2px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:99px;padding:5px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.field{margin:16px 0}
+.field label{display:block;font-weight:800;margin-bottom:4px}
+.req{font-weight:600;color:var(--muted);font-size:.85rem}
+.hint{font-size:.9rem;color:var(--muted);margin:0 0 6px}
+input[type=text],textarea,select{font:inherit;width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+textarea{resize:vertical}
+.box{border-radius:16px;padding:16px 18px;margin:12px 0}
+.box.a{background:var(--soft-a)} .box.b{background:var(--soft-b)} .box.c{background:var(--soft-c)}
+.box h3{margin-top:0}
+.box ul,.fb ul{margin:4px 0 0;padding-left:1.2em}
+.box li{margin:3px 0}
+.items{display:grid;gap:14px;margin-top:12px}
+.item,.msg{border:2px solid var(--line);border-radius:16px;padding:14px 16px}
+.item.ok,.msg.ok{border-color:var(--good)} .item.no,.msg.no{border-color:var(--bad)}
+.itext{font-weight:700;font-size:1.08rem;margin:0 0 10px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts.col{flex-direction:column}
+.opt{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:8px 16px;cursor:pointer;text-align:left}
+.opt:hover:not(:disabled){background:var(--soft-a)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt.picked{opacity:1}
+.opt.answer{background:var(--good);border-color:var(--good);color:#fff;opacity:1}
+.opt.picked:not(.answer){background:var(--bad);border-color:var(--bad);color:#fff}
+.fb{margin:10px 0 0;font-size:.98rem;background:var(--soft-c);border-radius:12px;padding:10px 12px}
+.fb p{margin:6px 0 0}
+.tally{margin:16px 0 0;font-weight:700;color:var(--muted)}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:24px}
+.btn{font:inherit;font-weight:800;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:10px 20px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--ink);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.copied{font-weight:700;color:var(--good)}
+#summary{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;margin-top:6px}
+.callout{border-left:5px solid var(--accent);background:var(--soft-c);border-radius:0 12px 12px 0;padding:10px 14px;margin:14px 0 0;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* messages / feed */
+.msg{background:#FAFBFD;padding:0;overflow:hidden}
+.mhead{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 14px;background:var(--soft-c);border-bottom:1px solid var(--line)}
+.mkind{font-size:.7rem;font-weight:700;text-transform:uppercase;background:var(--ink);color:#fff;border-radius:6px;padding:2px 7px;letter-spacing:.04em}
+.mfrom{font-size:.88rem;font-weight:700;word-break:break-word}
+.msub{font-weight:700;flex-basis:100%}
+.mbody{padding:12px 14px;font-size:1rem}
+.mbody p{margin:0 0 8px}
+.mbody .big{font-family:var(--display);font-size:1.3rem;font-weight:700}
+.link{color:#2B55C9;text-decoration:underline;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;word-break:break-all}
+.msg .opts,.msg .fb{margin:0 14px 14px}
+.opt.phish{border-color:var(--accent)}
+mark{background:transparent;color:inherit;border-radius:4px;padding:0 2px}
+.msg.revealed mark{background:#FFE45C;box-shadow:inset 0 -2px 0 var(--accent)}
+.pic{margin:0 0 10px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.pic svg,.pic img{display:block;width:100%;height:auto}
+.pic.hasphoto svg{display:none}
+.pic figcaption{font-size:.9rem;font-weight:700;color:var(--muted);padding:8px 12px;background:var(--soft-c)}
+.pic .clue{visibility:hidden}
+.msg.revealed .pic .clue{visibility:visible}
+.notes{font-size:.92rem;background:var(--soft-b);border-radius:10px;padding:8px 10px}
+.flags{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0}
+.flag{background:var(--soft-a);border-radius:12px;padding:10px 12px;font-size:.95rem}
+.flag strong{display:block;font-family:var(--display);font-size:1.05rem}
+.stop{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.stop div{border:2px solid var(--ink);border-radius:12px;padding:10px 12px}
+.stop strong{font-family:var(--display);font-size:1.3rem;display:block;color:var(--accent)}
+.keyart{display:flex;justify-content:center;margin:4px 0 8px}
+/* turn-in */
+.wait{background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;margin:0 0 16px;font-size:1.05rem}
+.wait strong{font-family:var(--display);font-size:1.25rem;margin-right:4px}
+ol.steps.big{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:10px}
+ol.steps.big li{border:2px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.steptext{flex:1;min-width:200px}
+.stepnum{font-family:var(--display);font-weight:700;background:var(--accent);color:#fff;border-radius:99px;padding:2px 12px;font-size:.9rem}
+.brand h1{font-weight:800;letter-spacing:-.01em}
+h2{font-weight:800;letter-spacing:-.015em}
+.eyebrow,.mkind,.mfrom{font-family:var(--mono)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="18" cy="18" r="13" fill="none" stroke="#1B1F33" stroke-width="5"/><rect x="27" y="26" width="7" height="18" rx="3" transform="rotate(-45 30 35)" fill="#1B1F33"/><path d="M12 18 l4 4 l8 -8" fill="none" stroke="#E4572E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><h1>Real or Fake?</h1><p>Grade 6 Library Media · Oct 7</p></div>
+    </div>
+    <button type="button" id="restart">Start over</button>
+  </header>
+  <div id="progress"></div>
+  <main id="card"></main>
+</div>
+<script>
+/* Original illustrations for the Real or Fake feed.
+   To use a real photo instead: upload it to a "photos" folder in the repo with the
+   matching name (photos/shark.jpg, photos/cat.jpg, photos/rescue.jpg, photos/crowd.jpg,
+   photos/singer.jpg). If the photo is there it replaces the drawing automatically. */
+window.PICS = (function(){
+  const clue = (cx, cy, rx, ry, label, lx, ly, w) => `<g class="clue"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#E4572E" stroke-width="4" stroke-dasharray="8 5"/><rect x="${lx}" y="${ly-15}" width="${w}" height="21" rx="6" fill="#E4572E"/><text x="${lx+w/2}" y="${ly}" text-anchor="middle" font-family="Atkinson Hyperlegible, sans-serif" font-size="13" font-weight="700" fill="#fff">${label}</text></g>`;
+  const svg = (vb, label, inner) => `<svg viewBox="${vb}" role="img" aria-label="${label}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+
+  const shark = svg("0 0 400 230", "A shark swimming on a flooded highway", `
+    <rect width="400" height="120" fill="#A7B3BF"/>
+    <path d="M0 95 Q40 70 80 92 T170 88 T260 92 T400 84 V120 H0Z" fill="#5E6B63"/>
+    <rect x="300" y="26" width="84" height="38" rx="4" fill="#1E7B48" stroke="#fff" stroke-width="2"/>
+    <text x="342" y="51" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#fff">EXIT 12</text>
+    <rect x="338" y="64" width="6" height="60" fill="#666"/>
+    <rect y="118" width="400" height="112" fill="#7D8A6E"/>
+    <path d="M0 130 Q50 124 100 130 T200 130 T300 130 T400 130" fill="none" stroke="#9AA58A" stroke-width="3"/>
+    <path d="M20 150 h70 l-8 -18 h-46 z" fill="#B23A3A"/><rect x="34" y="136" width="18" height="10" fill="#C9DCE8"/><rect x="58" y="136" width="18" height="10" fill="#C9DCE8"/>
+    <path d="M300 158 h80 l-9 -20 h-54 z" fill="#2F5DA8"/><rect x="315" y="142" width="22" height="11" fill="#C9DCE8"/><rect x="343" y="142" width="22" height="11" fill="#C9DCE8"/>
+    <rect x="0" y="148" width="400" height="82" fill="#7D8A6E" opacity=".85"/>
+    <g>
+      <path d="M118 170 Q200 128 290 162 Q205 186 118 170Z" fill="#8E99A3" stroke="#59636B" stroke-width="2"/>
+      <path d="M140 172 Q205 182 280 164" fill="none" stroke="#E7ECEF" stroke-width="5"/>
+      <path d="M192 146 L210 108 L226 150Z" fill="#7F8A93" stroke="#59636B" stroke-width="2"/>
+      <path d="M120 170 L94 146 L102 170 L90 194Z" fill="#7F8A93" stroke="#59636B" stroke-width="2"/>
+      <circle cx="268" cy="158" r="3.5" fill="#111"/>
+    </g>
+    <rect x="0" y="174" width="400" height="56" fill="#7D8A6E" opacity=".7"/>
+    ${clue(195, 158, 118, 50, "Pasted in? Edges look too clean", 120, 222, 230)}`);
+
+  const toes = Array.from({length:7}, (_,i)=>{const a=Math.PI*(1.05+i*0.9/6);return `<ellipse cx="${(222+Math.cos(a)*-0+ (i-3)*9.5).toFixed(1)}" cy="${(210-Math.sin((i/6)*Math.PI)*6).toFixed(1)}" rx="4.4" ry="5.4" fill="#F2A7B6"/>`;}).join("");
+  const cat = svg("0 0 400 250", "A fluffy cat with rainbow-striped fur in front of a store sign", `
+    <defs><linearGradient id="rb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E5484D"/><stop offset=".16" stop-color="#E5484D"/><stop offset=".16" stop-color="#F28C28"/><stop offset=".33" stop-color="#F28C28"/>
+      <stop offset=".33" stop-color="#F5D547"/><stop offset=".5" stop-color="#F5D547"/><stop offset=".5" stop-color="#3BB273"/><stop offset=".66" stop-color="#3BB273"/>
+      <stop offset=".66" stop-color="#3C7DD9"/><stop offset=".83" stop-color="#3C7DD9"/><stop offset=".83" stop-color="#8A4FD8"/><stop offset="1" stop-color="#8A4FD8"/></linearGradient></defs>
+    <rect width="400" height="250" fill="#F4E9D8"/>
+    <rect y="200" width="400" height="50" fill="#D9C3A2"/>
+    <rect x="22" y="18" width="190" height="46" rx="6" fill="#7A4B2A"/>
+    <text x="117" y="50" text-anchor="middle" font-family="Georgia, serif" font-size="24" font-weight="700" fill="#FCEFD9" letter-spacing="1">PETT SHOOOP</text>
+    <rect x="40" y="64" width="4" height="24" fill="#5B3920"/><rect x="190" y="64" width="4" height="24" fill="#5B3920"/>
+    <rect x="30" y="110" width="80" height="90" fill="#CFE3EC" stroke="#A88D6B" stroke-width="4"/>
+    <ellipse cx="250" cy="168" rx="68" ry="52" fill="url(#rb)"/>
+    <path d="M300 190 Q350 200 345 150" fill="none" stroke="url(#rb)" stroke-width="16" stroke-linecap="round"/>
+    <path d="M212 70 L222 32 L240 64Z M288 70 L278 32 L260 64Z" fill="url(#rb)"/>
+    <circle cx="250" cy="96" r="42" fill="url(#rb)"/>
+    <ellipse cx="234" cy="92" rx="7" ry="9" fill="#fff"/><ellipse cx="266" cy="92" rx="7" ry="9" fill="#fff"/>
+    <circle cx="235" cy="94" r="4" fill="#111"/><circle cx="265" cy="94" r="4" fill="#111"/>
+    <path d="M246 108 h8 l-4 5z" fill="#E86A8A"/>
+    <path d="M250 113 q-6 6 -12 2 M250 113 q6 6 12 2" fill="none" stroke="#111" stroke-width="2"/>
+    <ellipse cx="222" cy="214" rx="40" ry="15" fill="#FFF5EE" stroke="#C9B9A9" stroke-width="2"/>
+    ${toes}
+    <ellipse cx="282" cy="214" rx="18" ry="11" fill="#FFF5EE" stroke="#C9B9A9" stroke-width="2"/>
+    ${clue(117, 41, 105, 30, "Scrambled letters on the sign", 20, 100, 200)}
+    ${clue(222, 210, 42, 20, "7 toes!", 128, 244, 70)}`);
+
+  const rescue = svg("0 0 400 230", "Firefighters carrying a wet dog away from an icy pond", `
+    <rect width="400" height="230" fill="#DCEBF5"/>
+    <path d="M0 120 H400 V230 H0Z" fill="#F7FAFC"/>
+    <g stroke="#6B5B4E" stroke-width="4" fill="none"><path d="M40 120 V60 M40 80 L25 65 M40 90 L56 72"/><path d="M360 120 V50 M360 75 L345 58 M360 85 L377 66"/></g>
+    <ellipse cx="110" cy="175" rx="100" ry="34" fill="#BFDDEE" stroke="#94BFD6" stroke-width="3"/>
+    <ellipse cx="100" cy="178" rx="34" ry="12" fill="#4F7FA0"/>
+    <path d="M60 165 l20 8 l-6 10 M140 170 l-14 6 l10 8" stroke="#fff" stroke-width="2" fill="none"/>
+    <g>
+      <rect x="215" y="112" width="34" height="62" rx="10" fill="#D9472B"/><rect x="215" y="140" width="34" height="6" fill="#F5D547"/>
+      <circle cx="232" cy="98" r="14" fill="#E9B98F"/><path d="M216 96 Q232 76 248 96 Z" fill="#F5D547"/>
+      <rect x="219" y="172" width="11" height="34" fill="#B33A22"/><rect x="235" y="172" width="11" height="34" fill="#B33A22"/>
+      <rect x="315" y="112" width="34" height="62" rx="10" fill="#D9472B"/><rect x="315" y="140" width="34" height="6" fill="#F5D547"/>
+      <circle cx="332" cy="98" r="14" fill="#8A5A3C"/><path d="M316 96 Q332 76 348 96 Z" fill="#F5D547"/>
+      <rect x="319" y="172" width="11" height="34" fill="#B33A22"/><rect x="335" y="172" width="11" height="34" fill="#B33A22"/>
+      <ellipse cx="283" cy="140" rx="36" ry="16" fill="#8B5E3C"/>
+      <circle cx="252" cy="132" r="13" fill="#8B5E3C"/><path d="M244 126 l-6 14 l8 -3z" fill="#5E3E27"/><circle cx="250" cy="130" r="2" fill="#111"/><circle cx="240" cy="136" r="3" fill="#111"/>
+      <path d="M318 136 q10 -6 14 2" stroke="#8B5E3C" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M249 128 h18 M249 152 h18 M300 128 h16 M300 152 h16" stroke="#D9472B" stroke-width="8" stroke-linecap="round"/>
+      <path d="M262 118 q4 -6 8 0 M290 116 q4 -6 8 0" stroke="#9CC9E6" stroke-width="2" fill="none"/>
+    </g>`);
+
+  let seed = 7; const rnd = () => (seed = (seed*9301+49297)%233280)/233280;
+  const heads = Array.from({length:260}, (_,i)=>{const y=150+Math.pow(rnd(),0.8)*78, x=rnd()*400; const c=["#2C2A3A","#5B3A29","#8C5B3B","#D9A066","#3A3A3A"][Math.floor(rnd()*5)]; return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(3+ (y-150)/22).toFixed(1)}" fill="${c}"/>`;}).join("");
+  const crowd = svg("0 0 400 300", "A huge crowd on a beach in front of a concert stage", `
+    <defs><linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F59E6B"/><stop offset="1" stop-color="#FCD9A0"/></linearGradient></defs>
+    <rect width="400" height="230" fill="url(#sun)"/>
+    <circle cx="70" cy="95" r="22" fill="#FFE9B8"/>
+    <rect y="110" width="400" height="30" fill="#5FA4B8"/>
+    <rect y="138" width="400" height="92" fill="#E8C98F"/>
+    <rect x="140" y="60" width="120" height="78" fill="#2B2B38"/><rect x="132" y="52" width="136" height="12" fill="#3F3F52"/>
+    <g fill="#FFF3B0"><circle cx="152" cy="74" r="5"/><circle cx="176" cy="74" r="5"/><circle cx="200" cy="74" r="5"/><circle cx="224" cy="74" r="5"/><circle cx="248" cy="74" r="5"/></g>
+    <path d="M152 78 L120 150 L185 150Z M248 78 L215 150 L280 150Z" fill="#FFF3B0" opacity=".25"/>
+    ${heads}
+    <rect x="0" y="230" width="400" height="70" fill="#fff"/>
+    <rect x="0" y="230" width="400" height="1" fill="#D3D7E4"/>
+    <text x="12" y="250" font-family="Atkinson Hyperlegible, sans-serif" font-size="12" font-weight="700" fill="#555B75">🔎 REVERSE IMAGE SEARCH RESULT</text>
+    <rect x="12" y="258" width="58" height="34" rx="4" fill="url(#sun)"/><rect x="12" y="278" width="58" height="14" fill="#2C2A3A" opacity=".7"/>
+    <text x="80" y="272" font-family="Atkinson Hyperlegible, sans-serif" font-size="14" font-weight="700" fill="#1B1F33">Same photo found · first posted June 2019</text>
+    <text x="80" y="290" font-family="Atkinson Hyperlegible, sans-serif" font-size="13" fill="#555B75">Sunwave Music Festival, in another country</text>
+    <g class="clue"><rect x="74" y="256" width="320" height="40" rx="8" fill="none" stroke="#E4572E" stroke-width="4" stroke-dasharray="8 5"/><rect x="236" y="208" width="156" height="21" rx="6" fill="#E4572E"/><text x="314" y="223" text-anchor="middle" font-family="Atkinson Hyperlegible, sans-serif" font-size="13" font-weight="700" fill="#fff">Old photo, new caption</text></g>`);
+
+  const singer = svg("0 0 400 240", "A video of a pop singer talking to the camera", `
+    <defs><radialGradient id="stage" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#8A4FD8"/><stop offset="1" stop-color="#1B1236"/></radialGradient></defs>
+    <rect width="400" height="240" fill="#000"/>
+    <rect x="0" y="0" width="400" height="206" fill="url(#stage)"/>
+    <g fill="#fff" opacity=".18"><circle cx="60" cy="40" r="3"/><circle cx="340" cy="60" r="4"/><circle cx="90" cy="150" r="2"/><circle cx="320" cy="140" r="3"/></g>
+    <path d="M118 206 Q130 150 200 150 Q270 150 282 206Z" fill="#F2F2F2"/>
+    <path d="M150 112 Q140 40 200 36 Q262 40 252 112 Q262 150 240 168 L160 168 Q138 150 150 112Z" fill="#2CC4B0"/>
+    <rect x="186" y="128" width="28" height="30" fill="#C98E6B"/>
+    <ellipse cx="200" cy="100" rx="38" ry="46" fill="#D9A07A"/>
+    <path d="M162 86 Q170 50 200 52 Q232 50 240 86 Q222 66 200 70 Q178 66 162 86Z" fill="#2CC4B0"/>
+    <ellipse cx="186" cy="96" rx="5" ry="6" fill="#2B1B12"/><ellipse cx="214" cy="96" rx="5" ry="6" fill="#2B1B12"/>
+    <path d="M182 86 h10 M208 86 h10" stroke="#5A3A2A" stroke-width="3" stroke-linecap="round"/>
+    <path d="M200 102 v8 h-4" stroke="#B57A58" stroke-width="2" fill="none"/>
+    <g opacity=".9"><rect x="188" y="117" width="8" height="6" fill="#C46A5E"/><rect x="196" y="119" width="8" height="5" fill="#9E4E46"/><rect x="204" y="116" width="8" height="6" fill="#D58A78"/><rect x="192" y="124" width="10" height="4" fill="#C9906F"/><rect x="183" y="121" width="5" height="4" fill="#B88063"/></g>
+    <rect x="80" y="172" width="240" height="24" rx="4" fill="#000" opacity=".65"/>
+    <text x="200" y="189" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#fff">"I'm giving away 1,000 free phones!"</text>
+    <rect x="0" y="206" width="400" height="34" fill="#111"/>
+    <path d="M14 214 l14 9 l-14 9z" fill="#fff"/>
+    <rect x="40" y="221" width="280" height="4" rx="2" fill="#555"/><rect x="40" y="221" width="70" height="4" rx="2" fill="#E5484D"/><circle cx="110" cy="223" r="6" fill="#E5484D"/>
+    <text x="388" y="228" text-anchor="end" font-family="Arial, sans-serif" font-size="12" fill="#ccc">0:07 / 0:30</text>
+    ${clue(200, 120, 30, 18, "Blurry, glitchy mouth", 60, 48, 150)}
+    <g class="clue"><path d="M135 48 Q170 70 185 106" fill="none" stroke="#E4572E" stroke-width="3"/></g>`);
+
+  const fig = (name, art, caption) => `<figure class="pic"><img class="photo" src="photos/${name}.jpg" alt="" onload="this.parentNode.classList.add('hasphoto')" onerror="this.remove()">${art}<figcaption>${caption}</figcaption></figure>`;
+  return {
+    shark: fig("shark", shark, "📷 Photo: a shark swimming on a flooded highway"),
+    cat: fig("cat", cat, "📷 Photo: a cat with rainbow-striped fur. Look closely at the whole picture!"),
+    rescue: fig("rescue", rescue, "📷 Photo: firefighters carry a dog away from an icy pond"),
+    crowd: fig("crowd", crowd, "📷 Photo: a huge crowd at a beach concert, plus what you found when you searched"),
+    singer: fig("singer", singer, "🎬 Video: a famous singer talks to the camera. Watch her face closely!")
+  };
+})();
+
+window.LESSON = {
+  id:"g6-realfake-oct7",
+  teacher:"Ms. Gobe",
+  summaryTitle:"Library: Real or Fake? (Grade 6, Oct 7)",
+  turnIn:[
+    "Find the assignment <strong>Library: Real or Fake?</strong> and open it.",
+    "Click <strong>Add private comment</strong>, paste (Ctrl+V or Cmd+V), and click the arrow to post.",
+    "Click <strong>Turn in</strong>. Then show Ms. Gobe it says <strong>Turned in</strong>."
+  ],
+  steps:[
+    { type:"welcome", eyebrow:"Media Detectives", title:"Welcome back, detectives!",
+      html:`<p>Today has two parts: a <strong>quick recap</strong> of the Phishing case, then a <strong>new case</strong>. At the end, we'll turn in our work together as a class.</p>
+      <div class="box c"><h3>Reading goal check</h3>How's your Sora book going? Be honest. Goals can change!</div>`,
+      fields:[
+        {id:"name", label:"First name", short:"First name", placeholder:"First name only", required:true},
+        {id:"book", label:"Your Sora book and where you are now (%)", short:"Sora book + progress", placeholder:"Example: The Wild Robot · 78%", required:true},
+        {id:"goal", label:"Your reading goal for this week", short:"Reading goal", placeholder:"Example: Get to 90% by Friday", required:true}
+      ]},
+    { type:"inbox", eyebrow:"Recap · Case #6-02", title:"Real or Phish? Speed round", short:"Recap: Real or Phish",
+      html:`<p>Remember the 6 red flags: <strong>Hurry!</strong> · <strong>Too good to be true</strong> · <strong>Asks for secrets</strong> · <strong>Weird sender</strong> · <strong>Sketchy link</strong> · <strong>Generic or sloppy</strong>. Three new messages for Jordan. Real or phish?</p>`,
+      items:[
+        {kind:"Text", from:"+1 (555) 019-4470", subject:"",
+          body:`<p><mark>Your package could not be delivered.</mark> <mark>Update your address within 12 hours</mark>: <span class="link"><mark>pkg-redeliver.co/x7</mark></span></p>`,
+          a:"Phish", flags:["Unknown number","Hurry! (12 hours)","Sketchy link that doesn't match a real company"],
+          why:"Jordan didn't order anything. Fake delivery texts are one of the most common phishes, even for adults."},
+        {kind:"Email", from:"Coach Rivera &lt;j.rivera@mapleridge.school&gt;", subject:"Practice moved to 3:30 Thursday",
+          body:`<p>Hi team, practice is moved to 3:30 on Thursday because of the assembly. Same gym. See you there!</p>`,
+          a:"Real", flags:[], why:"Real school address, no link, and it doesn't ask for anything. Compare it to last week's fake basketball DM!"},
+        {kind:"Direct message", from:"@sam_k (Jordan's friend)", subject:"",
+          body:`<p><mark>lol is this u in this video??</mark> 😂 <span class="link"><mark>vid-share.click/watch?id=88</mark></span></p>`,
+          a:"Phish", flags:["Friend's account may be hacked","Weird link","Uses curiosity to get a click"],
+          why:"It's from a friend, so it feels safe. But hacked accounts send this exact message. Check with Sam another way before clicking."}
+      ]},
+    { type:"read", eyebrow:"Case #6-03 · Background", title:"Not every fake is a phish",
+      html:`<p>Phishing tries to steal from you. Other fakes just try to <strong>fool</strong> you, and get you to share them. The more people share, the more likes, views, and attention the faker gets.</p>
+      <h3>4 kinds of fake posts</h3>
+      <div class="flags">
+        <div class="flag"><strong>AI-made</strong>A picture, video, or voice made by a computer. It shows something that never happened.</div>
+        <div class="flag"><strong>Edited</strong>A real photo that was changed: things added, removed, or moved around.</div>
+        <div class="flag"><strong>Wrong caption</strong>A real photo with a false story. Example: a photo from 2019 posted as "happening right now."</div>
+        <div class="flag"><strong>Fake account</strong>An account pretending to be a news site, a celebrity, or a school.</div>
+      </div>
+      <div class="box a"><h3>Picture clues can help, but they're not proof</h3>AI images sometimes have <strong>scrambled words</strong> on signs, <strong>extra fingers or toes</strong>, or backgrounds that <strong>melt together</strong>. But AI keeps getting better, and many fakes have no clues at all. So detectives use a stronger move...</div>`},
+    { type:"read", eyebrow:"Case #6-03 · Detective move", title:"Read like a fact-checker",
+      html:`<p>Professional fact-checkers don't just stare at a post. They <strong>leave the post</strong> and check what other sources say. This is called <strong>lateral reading</strong> (reading sideways, in new tabs).</p>
+      <div class="stop">
+        <div><strong>Stop</strong>Feel a big "WOW" or "NO WAY"? That's your cue to pause before you share.</div>
+        <div><strong>Source</strong>Who posted it? A new account? A real news site? Click their profile.</div>
+        <div><strong>Search</strong>Open a new tab. Are trusted news sites or fact-checkers reporting it too?</div>
+        <div><strong>Trace</strong>Find where the photo first came from. Is it old? Is it from somewhere else?</div>
+      </div>
+      <div class="callout">If you can't tell if it's real, that's okay! The smart move is simple: <strong>don't share it.</strong></div>`},
+    { type:"inbox", eyebrow:"Case #6-03 · Evidence", title:"Investigate the feed", short:"Real or Fake feed",
+      choices:[{v:"Real",t:"Probably real"},{v:"Fake",t:"Fake or misleading",bad:true}],
+      verdicts:{Real:"PROBABLY REAL", Fake:"FAKE or MISLEADING"},
+      html:`<p>These posts showed up in Jordan's feed. (The accounts are made up.) For each one, read the account name, the post, and the <strong>detective notes</strong>. Then decide.</p>`,
+      items:[
+        {kind:"Post", from:"@<mark>BreakingNewz24</mark> · joined last month", subject:"",
+          body:`${PICS.shark}<p><mark>SHARK ON THE HIGHWAY AFTER THE HURRICANE!!! Share before they delete this!!</mark></p><p class="notes">🔎 Detective notes: You search "shark on highway hurricane." Fact-check sites say this same picture has been posted after lots of different storms, and it's been edited.</p>`,
+          a:"Fake", flags:["Brand-new account with a news-sounding name","Big WOW feeling + \"share before they delete\"","Fact-checkers already proved it's edited"],
+          why:"\"Share before they delete this\" is a trick to make you hurry, just like phishing. Searching took 10 seconds and solved the case."},
+        {kind:"Post", from:"@MapleRidgeSchools · official district account · posting since 2015", subject:"",
+          body:`<p>Reminder: There is <strong>no school next Monday</strong> for a teacher training day. See the full calendar on our website.</p><p class="notes">🔎 Detective notes: The school website calendar says the same thing.</p>`,
+          a:"Real", flags:[], why:"A long-running official account, nothing shocking, and the school's own website matches. That's what checking sideways looks like."},
+        {kind:"Post", from:"@daily.animal.wow", subject:"",
+          body:`${PICS.cat}<p><mark>Rare rainbow cat discovered!! Only 1 in the world!</mark> 🌈</p><p class="notes">🔎 Detective notes: You search "rainbow cat." No news sites or science sites mention it.</p>`,
+          a:"Fake", flags:["Scrambled words on the sign (an AI clue)","Extra toes (an AI clue)","No trusted source is reporting it"],
+          why:"This one had picture clues, but the strongest clue was that nobody trustworthy was talking about a one-of-a-kind discovery."},
+        {kind:"Post", from:"@Channel9LocalNews · TV station · posting since 2011", subject:"",
+          body:`${PICS.rescue}<p>Crews rescued a dog from Miller Pond this morning. The dog is warm, safe, and back with its family.</p><p class="notes">🔎 Detective notes: Two other local news sites have the same story, with different photos from the scene.</p>`,
+          a:"Real", flags:[], why:"A known news source, specific details (where and when), and other sources confirm it. Surprising stories can be true!"},
+        {kind:"Post", from:"@<mark>truthwatcher88</mark>", subject:"",
+          body:`${PICS.crowd}<p><mark>THIS is how many people came to the concert in our town last night!!</mark></p><p class="notes">🔎 Detective notes: You did a reverse image search. Look at the result under the photo.</p>`,
+          a:"Fake", flags:["Real photo, wrong caption","Old photo posted like it's new","Trace it: the original came from somewhere else"],
+          why:"The photo is real, but the story is false. Tracing a picture to where it first appeared catches this kind of fake."},
+        {kind:"Video", from:"@<mark>PopStarr_Official_Giveaway</mark>", subject:"",
+          body:`${PICS.singer}<p>"<mark>I'm giving away 1,000 free phones to my fans! Click the link and enter your info!</mark>" <span class="link"><mark>freephone-gift.win</mark></span></p><p class="notes">🔎 Detective notes: The singer's real, verified account has never posted about this.</p>`,
+          a:"Fake", flags:["AI voice and video (a deepfake)","Too good to be true","Asks for your info + sketchy link: it's a phish too!"],
+          why:"Fakes and phishing team up. A deepfake of someone famous makes the scam feel trustworthy. Always check the person's real account."}
+      ]},
+    { type:"choice", eyebrow:"Apply it", title:"What's your move?", short:"What's your move",
+      items:[
+        {q:"Someone in your group chat posts a shocking picture with \"OMG share this!!\"",
+          opts:[{t:"Share it fast so everyone sees it.",ok:false,why:"That big \"OMG\" feeling is the signal to slow down."},
+                {t:"Pause, search what trusted sources say, and don't share if you can't tell.",ok:true,why:"Stop and check. If you still can't tell, not sharing is a great choice."},
+                {t:"Reply \"fake!!\" without checking.",ok:false,why:"Guessing isn't checking. It could be real."}]},
+        {q:"You find an amazing photo for your science project, but you don't know where it came from.",
+          opts:[{t:"Use it. It looks real.",ok:false,why:"Looking real isn't enough anymore. AI can make anything look real."},
+                {t:"Trace it to the original source, or find a photo from a trusted site instead.",ok:true,why:"Knowing where a photo came from is what makes it good evidence."},
+                {t:"Add \"this might be fake\" and use it anyway.",ok:false,why:"Better to find a source you can trust."}]},
+        {q:"You shared a post and later found out it was fake.",
+          opts:[{t:"Delete it and tell people it turned out to be fake.",ok:true,why:"Owning a mistake helps stop the fake from spreading. Even adults do this."},
+                {t:"Leave it up. Everyone already saw it.",ok:false,why:"Leaving it up keeps it spreading."},
+                {t:"Never share anything ever again.",ok:false,why:"You don't need to quit. Just check first next time."}]}
+      ]},
+    { type:"reflect", eyebrow:"Exit ticket", title:"Close the case",
+      fields:[
+        {id:"r1", label:"Which post fooled you, or almost fooled you? What gave it away?", short:"Post that almost fooled me", long:true, required:true},
+        {id:"r2", label:"Why is checking OTHER sources better than only looking for clues in the picture?", short:"Why lateral reading works", long:true, required:true},
+        {id:"r3", label:"Challenge: Write a \"pause before you share\" rule for your friend group chat.", short:"My group chat rule", long:true}
+      ]},
+    { type:"finish", eyebrow:"Case closed", title:"Turn in your work",
+      html:`<p>Nice detective work! Your answers are in the box below.</p>`}
+  ]
+};
+
+</script>
+<script>/* Self-paced lesson engine. Expects a global LESSON object. */
+(function(){
+const L = window.LESSON;
+const KEY = "async-" + L.id;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let S = { step:0, inputs:{}, picks:{} };
+try { const saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved && typeof saved === "object") S = Object.assign(S, saved); } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+
+const DEFAULT_CHOICES = [{v:"Real",t:"Looks real"},{v:"Phish",t:"Phish!",bad:true}];
+const DEFAULT_VERDICTS = {Real:"REAL", Phish:"a PHISH"};
+
+function score(step, si){
+  if (!step.items) return null;
+  let right = 0, done = 0;
+  step.items.forEach((it, i) => {
+    const p = S.picks[si + ":" + i];
+    if (p == null) return;
+    done++;
+    if (step.type === "choice") { if (it.opts[p] && it.opts[p].ok) right++; }
+    else if (p === it.a) right++;
+  });
+  return { right, done, total: step.items.length };
+}
+
+function complete(step, si){
+  if (step.type === "welcome" || step.type === "reflect") return (step.fields || []).every(f => !f.required || (S.inputs[f.id] || "").trim());
+  if (step.items) { const sc = score(step, si); return sc.done === sc.total; }
+  return true;
+}
+
+function field(f){
+  const v = esc(S.inputs[f.id] || "");
+  const tag = f.long
+    ? `<textarea id="f-${f.id}" data-f="${f.id}" rows="3" placeholder="${esc(f.placeholder||"")}">${v}</textarea>`
+    : `<input id="f-${f.id}" data-f="${f.id}" type="text" autocomplete="off" placeholder="${esc(f.placeholder||"")}" value="${v}">`;
+  return `<div class="field"><label for="f-${f.id}">${f.label}${f.required?' <span class="req">(required)</span>':''}</label>${f.hint?`<p class="hint">${f.hint}</p>`:''}${tag}</div>`;
+}
+
+function itemsHTML(step, si){
+  if (step.type === "sort") return `<div class="items">${step.items.map((it,i)=>{
+    const p = S.picks[si+":"+i];
+    return `<div class="item ${p!=null?(p===it.a?'ok':'no'):''}"><p class="itext">${it.t}</p>
+      <div class="opts">${step.options.map(o=>`<button type="button" class="opt ${p===o?'picked':''} ${p!=null&&o===it.a?'answer':''}" data-pick="${si}:${i}" data-v="${esc(o)}" ${p!=null?'disabled':''}>${o}</button>`).join("")}</div>
+      ${p!=null?`<p class="fb"><strong>${p===it.a?step.yes||'Correct!':'Not quite. It\'s '+it.a+'.'}</strong> ${it.why}</p>`:''}</div>`;}).join("")}</div>`;
+  if (step.type === "choice") return `<div class="items">${step.items.map((it,i)=>{
+    const p = S.picks[si+":"+i];
+    return `<div class="item ${p!=null?(it.opts[p].ok?'ok':'no'):''}"><p class="itext">${it.q}</p>
+      <div class="opts col">${it.opts.map((o,k)=>`<button type="button" class="opt wide ${p===k?'picked':''} ${p!=null&&o.ok?'answer':''}" data-pick="${si}:${i}" data-v="${k}" ${p!=null?'disabled':''}>${o.t}</button>`).join("")}</div>
+      ${p!=null?`<p class="fb"><strong>${it.opts[p].ok?'Great choice!':'Think again.'}</strong> ${it.opts[p].why}${it.opts[p].ok?'':' '+it.opts.find(o=>o.ok).why}</p>`:''}</div>`;}).join("")}</div>`;
+  if (step.type === "inbox") {
+    const choices = step.choices || DEFAULT_CHOICES, verdicts = step.verdicts || DEFAULT_VERDICTS;
+    return `<div class="items">${step.items.map((m,i)=>{
+    const p = S.picks[si+":"+i];
+    return `<div class="msg ${p!=null?'revealed '+(p===m.a?'ok':'no'):''}">
+      <div class="mhead"><span class="mkind">${m.kind}</span><span class="mfrom">${m.from}</span>${m.subject?`<span class="msub">${m.subject}</span>`:''}</div>
+      <div class="mbody">${m.body}</div>
+      <div class="opts">${choices.map(o=>`<button type="button" class="opt ${o.bad?'phish':'real'} ${p===o.v?'picked':''} ${p!=null&&o.v===m.a?'answer':''}" data-pick="${si}:${i}" data-v="${o.v}" ${p!=null?'disabled':''}>${o.t}</button>`).join("")}</div>
+      ${p!=null?`<div class="fb"><strong>${p===m.a?'You got it!':'Look again.'} This one is ${verdicts[m.a]||m.a}.</strong>${m.flags&&m.flags.length?`<ul>${m.flags.map(f=>`<li>${f}</li>`).join("")}</ul>`:''}<p>${m.why}</p></div>`:''}
+    </div>`;}).join("")}</div>`;
+  }
+  return "";
+}
+
+function summaryText(){
+  const lines = [L.summaryTitle];
+  L.steps.forEach((st, si) => {
+    (st.fields||[]).forEach(f => { if (S.inputs[f.id]) lines.push(`${f.short||f.label}: ${S.inputs[f.id].trim()}`); });
+    if (st.items) { const sc = score(st, si); lines.push(`${st.short}: ${sc.right} out of ${sc.total}`); }
+  });
+  return lines.join("\n");
+}
+
+function render(){
+  const si = S.step, st = L.steps[si], n = L.steps.length;
+  $("#progress").innerHTML = `<div class="pbar"><div style="width:${Math.round((si)/(n-1)*100)}%"></div></div><span>Step ${si+1} of ${n}</span>`;
+  let body = "";
+  if (st.type === "finish") {
+    body = `<div class="wait"><strong>&#9995; Stop here!</strong> We will turn this in <em>together</em>. Wait for ${L.teacher||"your teacher"} to show the steps on the board.</div>
+      ${st.html||""}
+      <label for="summary" class="eyebrow">My answers</label>
+      <textarea id="summary" readonly rows="9">${esc(summaryText())}</textarea>
+      <ol class="steps big">
+        <li><span class="stepnum">Step 1</span><button type="button" class="btn primary" id="copy">Copy my answers</button> <span id="copied" class="copied" role="status"></span></li>
+        <li><span class="stepnum">Step 2</span><a class="btn" id="openclass" href="https://classroom.google.com" target="_blank" rel="noopener">Open Google Classroom &#8599;</a></li>
+        ${L.turnIn.map((t,k)=>`<li><span class="stepnum">Step ${k+3}</span><span class="steptext">${t}</span></li>`).join("")}
+      </ol>
+      <div class="callout">Lost your place? Come back to this tab. Your answers are still here. Click <strong>Copy my answers</strong> again.</div>`;
+  } else {
+    body = (st.html||"") + (st.fields?st.fields.map(field).join(""):"") + itemsHTML(st, si);
+  }
+  const sc = st.items ? score(st, si) : null;
+  $("#card").innerHTML = `<div class="cardhead"><div><div class="eyebrow">${st.eyebrow||""}</div><h2>${st.title}</h2></div>
+      ${"speechSynthesis" in window?`<button type="button" class="listen" id="listen">Read to me</button>`:''}</div>
+    <div id="content">${body}</div>
+    ${sc?`<p class="tally">Score: <strong>${sc.right}</strong> of ${sc.total}</p>`:''}
+    <div class="nav">
+      ${si>0?`<button type="button" class="btn" id="back">Back</button>`:'<span></span>'}
+      ${si<n-1?`<button type="button" class="btn primary" id="next" ${complete(st,si)?'':'disabled'}>${complete(st,si)?'Next':st.items?'Answer all to continue':'Fill in the required boxes'}</button>`:''}
+    </div>`;
+  bind();
+}
+
+function bind(){
+  document.querySelectorAll("[data-f]").forEach(el => el.addEventListener("input", () => {
+    S.inputs[el.dataset.f] = el.value; save();
+    const st = L.steps[S.step], nx = $("#next");
+    if (nx) { const ok = complete(st, S.step); nx.disabled = !ok; nx.textContent = ok ? "Next" : "Fill in the required boxes"; }
+  }));
+  document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => {
+    const st = L.steps[S.step]; const v = st.type === "choice" ? +b.dataset.v : b.dataset.v;
+    S.picks[b.dataset.pick] = v; save(); const y = window.scrollY; render(); window.scrollTo(0, y);
+  });
+  const nx = $("#next"), bk = $("#back");
+  if (nx) nx.onclick = () => { stopTalk(); S.step++; save(); render(); window.scrollTo(0,0); };
+  if (bk) bk.onclick = () => { stopTalk(); S.step--; save(); render(); window.scrollTo(0,0); };
+  const cp = $("#copy");
+  if (cp) cp.onclick = () => {
+    const ta = $("#summary"), msg = $("#copied");
+    const fallback = () => { ta.focus(); ta.select(); msg.textContent = "Selected. Now press Ctrl+C (or Cmd+C) to copy."; };
+    try { navigator.clipboard.writeText(ta.value).then(() => { msg.textContent = "Copied! Now do Step 2."; }, fallback); } catch(e) { fallback(); }
+  };
+  const ls = $("#listen");
+  if (ls) ls.onclick = () => {
+    if (speechSynthesis.speaking) { stopTalk(); return; }
+    const c = $("#card").cloneNode(true);
+    c.querySelectorAll("button,input,textarea,select,.nav,.listen,.tally,a.btn,svg,img").forEach(e => e.remove());
+    try { const u = new SpeechSynthesisUtterance(c.innerText.replace(/\s+/g," ")); u.rate = .95; u.onend = () => { ls.textContent = "Read to me"; }; speechSynthesis.speak(u); ls.textContent = "Stop reading"; } catch(e){}
+  };
+}
+function stopTalk(){ try { speechSynthesis.cancel(); } catch(e){} }
+
+const r = $("#restart");
+if (r) r.onclick = () => {
+  if (r.dataset.confirm) { S = { step:0, inputs:{}, picks:{} }; save(); delete r.dataset.confirm; r.textContent = "Start over"; render(); }
+  else { r.dataset.confirm = "1"; r.textContent = "Tap again to erase my answers"; setTimeout(()=>{ delete r.dataset.confirm; r.textContent = "Start over"; }, 4000); }
+};
+render();
+})();
+</script>
+</body></html>

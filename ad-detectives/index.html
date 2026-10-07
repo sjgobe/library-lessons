@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ad Detectives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;display=swap">
+<style>
+:root{color-scheme:light;--ground:#E9F3F1;--panel:#FFFFFF;--ink:#15313A;--muted:#4F6A71;--line:#C9DDD9;--accent:#3445B8;--focus:#FFC83D;--good:#1F8A5B;--bad:#C2410C;--soft-a:#E2E5FA;--soft-b:#DDF3E8;--soft-c:#FFF3CF;--radius:22px;--display:"Fredoka","Trebuchet MS",system-ui,sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:18px 60px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand h1{font-family:var(--display);font-weight:700;font-size:1.55rem;line-height:1.1;margin:0}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+#restart{font:inherit;font-size:.82rem;font-weight:700;background:transparent;border:0;color:var(--muted);cursor:pointer;text-decoration:underline}
+#progress{display:flex;align-items:center;gap:12px;margin:16px 0 10px;font-weight:700;font-size:.85rem;color:var(--muted)}
+.pbar{flex:1;height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar div{height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+#card{background:var(--panel);border-radius:var(--radius);padding:26px clamp(18px,4vw,34px)}
+.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.eyebrow{display:block;font-weight:800;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(1.6rem,4.5vw,2.2rem);line-height:1.12;margin:4px 0 14px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:1.25rem;margin:18px 0 6px}
+p{margin:0 0 12px}
+.listen{font:inherit;font-size:.85rem;font-weight:700;border:2px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:99px;padding:5px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.field{margin:16px 0}
+.field label{display:block;font-weight:800;margin-bottom:4px}
+.req{font-weight:600;color:var(--muted);font-size:.85rem}
+.hint{font-size:.9rem;color:var(--muted);margin:0 0 6px}
+input[type=text],textarea,select{font:inherit;width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+textarea{resize:vertical}
+.box{border-radius:16px;padding:16px 18px;margin:12px 0}
+.box.a{background:var(--soft-a)} .box.b{background:var(--soft-b)} .box.c{background:var(--soft-c)}
+.box h3{margin-top:0}
+.box ul,.fb ul{margin:4px 0 0;padding-left:1.2em}
+.box li{margin:3px 0}
+.items{display:grid;gap:14px;margin-top:12px}
+.item,.msg{border:2px solid var(--line);border-radius:16px;padding:14px 16px}
+.item.ok,.msg.ok{border-color:var(--good)} .item.no,.msg.no{border-color:var(--bad)}
+.itext{font-weight:700;font-size:1.08rem;margin:0 0 10px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts.col{flex-direction:column}
+.opt{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:8px 16px;cursor:pointer;text-align:left}
+.opt:hover:not(:disabled){background:var(--soft-a)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt.picked{opacity:1}
+.opt.answer{background:var(--good);border-color:var(--good);color:#fff;opacity:1}
+.opt.picked:not(.answer){background:var(--bad);border-color:var(--bad);color:#fff}
+.fb{margin:10px 0 0;font-size:.98rem;background:var(--soft-c);border-radius:12px;padding:10px 12px}
+.fb p{margin:6px 0 0}
+.tally{margin:16px 0 0;font-weight:700;color:var(--muted)}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:24px}
+.btn{font:inherit;font-weight:800;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:10px 20px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--ink);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.copied{font-weight:700;color:var(--good)}
+#summary{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;margin-top:6px}
+.callout{border-left:5px solid var(--accent);background:var(--soft-c);border-radius:0 12px 12px 0;padding:10px 14px;margin:14px 0 0;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* messages / feed */
+.msg{background:#FAFBFD;padding:0;overflow:hidden}
+.mhead{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 14px;background:var(--soft-c);border-bottom:1px solid var(--line)}
+.mkind{font-size:.7rem;font-weight:700;text-transform:uppercase;background:var(--ink);color:#fff;border-radius:6px;padding:2px 7px;letter-spacing:.04em}
+.mfrom{font-size:.88rem;font-weight:700;word-break:break-word}
+.msub{font-weight:700;flex-basis:100%}
+.mbody{padding:12px 14px;font-size:1rem}
+.mbody p{margin:0 0 8px}
+.mbody .big{font-family:var(--display);font-size:1.3rem;font-weight:700}
+.link{color:#2B55C9;text-decoration:underline;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;word-break:break-all}
+.msg .opts,.msg .fb{margin:0 14px 14px}
+.opt.phish{border-color:var(--accent)}
+mark{background:transparent;color:inherit;border-radius:4px;padding:0 2px}
+.msg.revealed mark{background:#FFE45C;box-shadow:inset 0 -2px 0 var(--accent)}
+.pic{margin:0 0 10px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.pic svg,.pic img{display:block;width:100%;height:auto}
+.pic.hasphoto svg{display:none}
+.pic figcaption{font-size:.9rem;font-weight:700;color:var(--muted);padding:8px 12px;background:var(--soft-c)}
+.pic .clue{visibility:hidden}
+.msg.revealed .pic .clue{visibility:visible}
+.notes{font-size:.92rem;background:var(--soft-b);border-radius:10px;padding:8px 10px}
+.flags{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0}
+.flag{background:var(--soft-a);border-radius:12px;padding:10px 12px;font-size:.95rem}
+.flag strong{display:block;font-family:var(--display);font-size:1.05rem}
+.stop{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.stop div{border:2px solid var(--ink);border-radius:12px;padding:10px 12px}
+.stop strong{font-family:var(--display);font-size:1.3rem;display:block;color:var(--accent)}
+.keyart{display:flex;justify-content:center;margin:4px 0 8px}
+/* turn-in */
+.wait{background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;margin:0 0 16px;font-size:1.05rem}
+.wait strong{font-family:var(--display);font-size:1.25rem;margin-right:4px}
+ol.steps.big{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:10px}
+ol.steps.big li{border:2px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.steptext{flex:1;min-width:200px}
+.stepnum{font-family:var(--display);font-weight:700;background:var(--accent);color:#fff;border-radius:99px;padding:2px 12px;font-size:.9rem}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><path d="M6 17 L30 8 V38 L6 29 Z" fill="#3445B8"/><rect x="2" y="17" width="8" height="12" rx="3" fill="#3445B8"/><path d="M35 15 Q41 23 35 31" fill="none" stroke="#FFC83D" stroke-width="4" stroke-linecap="round"/><path d="M12 29 L16 40 H22 L19 31" fill="#3445B8"/></svg>
+      <div><h1>Ad Detectives</h1><p>Grades 4–5 Library · Oct 7</p></div>
+    </div>
+    <button type="button" id="restart">Start over</button>
+  </header>
+  <div id="progress"></div>
+  <main id="card"></main>
+</div>
+<script>
+window.LESSON = {
+  id:"g45-ads-oct7",
+  teacher:"Ms. Gobe",
+  summaryTitle:"Library: Ad Detectives (Grades 4–5, Oct 7)",
+  turnIn:[
+    "Find the assignment <strong>Library: Ad Detectives</strong> and open it.",
+    "Click <strong>Add private comment</strong>, paste (Ctrl+V or Cmd+V), and click the arrow to post.",
+    "Click <strong>Turn in</strong>. Then show Ms. Gobe it says <strong>Turned in</strong>. You did it!"
+  ],
+  steps:[
+    { type:"welcome", eyebrow:"Hi, Explorers!", title:"Welcome back!",
+      html:`<p>Today has two parts: a <strong>quick password review</strong>, then a <strong>new mission</strong>. At the end, we'll turn in our work together.</p>
+      <div class="box c"><h3>Before you start</h3><ul><li>Stuck on a word? Click <strong>Read to me</strong>.</li><li>Take your time. Read every answer before you click!</li></ul></div>`,
+      fields:[
+        {id:"name", label:"Your first name", short:"First name", placeholder:"First name only", required:true, hint:"Just your first name. We shield our full names online!"},
+        {id:"book", label:"What book are you reading on Sora?", short:"My Sora book", placeholder:"Title", required:true},
+        {id:"where", label:"How far are you? (Sora shows a %)", short:"How far I am", placeholder:"Example: 35%"}
+      ]},
+    { type:"sort", eyebrow:"Remember last time?", title:"Password power check", short:"Review: Weak or strong",
+      html:`<p>The 3 password rules: <strong>Make it long.</strong> <strong>Make it not about you.</strong> <strong>Keep it secret.</strong> Is each password weak or strong?</p>`,
+      options:["Weak","Strong"], yes:"Yes!",
+      items:[
+        {t:"sunshine", a:"Weak", why:"One common word is easy to guess."},
+        {t:"Tyler2016", a:"Weak", why:"A name + a year is about YOU."},
+        {t:"Banjo-Comet-Pickle-7", a:"Strong", why:"Random words + a number = a strong passphrase!"},
+        {t:"Fluffy!", a:"Weak", why:"A pet's name is easy to find, even with a ! on the end."}
+      ]},
+    { type:"read", eyebrow:"New mission", title:"What is an ad?",
+      html:`<div class="keyart"><svg width="220" height="90" viewBox="0 0 220 90" aria-hidden="true"><path d="M20 35 L80 18 V72 L20 55 Z" fill="#3445B8"/><rect x="8" y="35" width="16" height="20" rx="4" fill="#3445B8"/><path d="M30 55 L40 80 H52 L46 60" fill="#3445B8"/><path d="M96 30 Q110 45 96 60 M108 22 Q130 45 108 68" fill="none" stroke="#FFC83D" stroke-width="7" stroke-linecap="round"/><text x="140" y="56" font-family="Fredoka, sans-serif" font-size="34" font-weight="700" fill="#15313A">BUY!</text></svg></div>
+      <p>An <strong>ad</strong> (short for advertisement) is a message that someone <strong>pays for</strong>. They want you to buy something, download something, watch something, or click.</p>
+      <p>Ads are not bad! They help pay for free apps, games, and videos. But a smart Explorer always knows <strong>when they're looking at an ad</strong>.</p>
+      <h3>Ask the 3 detective questions</h3>
+      <div class="box a"><h3>1. Who made this?</h3>A company? A friend? A teacher?</div>
+      <div class="box b"><h3>2. What do they want me to do?</h3>Buy it? Click it? Download it? Watch more?</div>
+      <div class="box c"><h3>3. How is it trying to make me feel?</h3>Excited? In a hurry? Like I'm missing out?</div>`},
+    { type:"read", eyebrow:"New mission", title:"Where ads hide",
+      html:`<p>Some ads are easy to spot, like a commercial on TV. Others are <strong>sneaky</strong>. Here are places ads like to hide:</p>
+      <div class="flags">
+        <div class="flag"><strong>Inside games</strong>"Watch a video to get 50 coins!" or "Mega deal! Only 1 minute left!"</div>
+        <div class="flag"><strong>In videos</strong>A YouTuber says "Thanks to ___ for sponsoring this video!" That means the company paid them.</div>
+        <div class="flag"><strong>In search results</strong>The top results sometimes have a tiny label that says <strong>Sponsored</strong>.</div>
+        <div class="flag"><strong>Pop-ups</strong>"You won a prize!" pop-ups are ads, or even tricks. (Remember the free tablet?)</div>
+      </div>
+      <div class="callout">Look for clue words: <strong>Ad</strong> · <strong>Sponsored</strong> · <strong>Promoted</strong> · <strong>Paid partnership</strong> · <strong>#ad</strong></div>`},
+    { type:"inbox", eyebrow:"Activity 1", title:"Ad or not an ad?", short:"Ad or not sort",
+      choices:[{v:"Ad",t:"It's an ad!",bad:true},{v:"Not",t:"Not an ad"}],
+      verdicts:{Ad:"an AD", Not:"NOT an ad"},
+      html:`<p>Here are things Maya saw on her screens this week. (Maya and these companies are made up.) Is each one an ad? After you pick, the clues light up.</p>`,
+      items:[
+        {kind:"Game", from:"Pixel Quest", subject:"",
+          body:`<p class="big"><mark>MEGA GEM BUNDLE · 80% OFF!</mark></p><p><mark>Only 00:59 left!</mark> <mark>Buy now for $9.99</mark></p>`,
+          a:"Ad", flags:["Wants you to buy something","A timer to make you hurry"],
+          why:"The timer is there to make you feel rushed. A smart move: close it and ask a grown-up."},
+        {kind:"App", from:"Sora", subject:"Your hold is ready",
+          body:`<p>Good news! <em>The Wild Robot</em> is ready for you to read.</p>`,
+          a:"Not", flags:[], why:"Not an ad! It's a notice about a book YOU asked for. Nobody paid to show it to you."},
+        {kind:"Video", from:"GameGuy Gabe", subject:"Unboxing the new BlasterBots!",
+          body:`<p>"These are the coolest toys EVER! <mark>Thanks to BlasterBots for sponsoring this video!</mark>"</p>`,
+          a:"Ad", flags:["Clue word: sponsoring","The company paid Gabe to talk about the toy"],
+          why:"Gabe might really like the toy, but he was paid to show it. That makes the whole video an ad."},
+        {kind:"Search", from:"Search results for \"kids running shoes\"", subject:"",
+          body:`<p><mark>Sponsored</mark> · <span class="link">supersneaks.com</span></p><p>SuperSneaks: The BEST shoes for kids! Shop now!</p>`,
+          a:"Ad", flags:["Tiny clue word: Sponsored","Wants you to shop"],
+          why:"Companies pay to be at the top of search results. Look for the word Sponsored."},
+        {kind:"Class page", from:"Mr. Alvarez · Grade 4", subject:"",
+          body:`<p>Reminder: Field trip permission slips are due Friday!</p>`,
+          a:"Not", flags:[], why:"Not an ad. It's from a teacher, and nobody is trying to sell you anything."},
+        {kind:"Game", from:"Farm Friends", subject:"",
+          body:`<p><mark>Watch a 30-second video to get 50 FREE coins!</mark> 🪙</p>`,
+          a:"Ad", flags:["The video you'd watch IS an ad","Uses \"FREE\" to get you to watch"],
+          why:"Other companies pay the game to show you their ads. The coins are your \"payment\" for watching."},
+        {kind:"Post", from:"@SkyeDances (dancer with 2 million fans)", subject:"",
+          body:`<p>Obsessed with my new GlowPods headphones!! 🎧✨ <mark>#ad</mark></p>`,
+          a:"Ad", flags:["Clue word: #ad","A famous person paid to post about it"],
+          why:"#ad means \"I was paid for this post.\" It's an ad, even when it looks like a normal post."}
+      ]},
+    { type:"choice", eyebrow:"Activity 2", title:"What would you do?", short:"What would you do",
+      items:[
+        {q:"Your game says: \"Buy the Mega Bundle now! Only 1 minute left!\"",
+          opts:[{t:"Buy it fast before time runs out.",ok:false,why:"The timer is a trick to rush you."},
+                {t:"Close it and ask a grown-up before buying anything.",ok:true,why:"Ads try to make you hurry. Slowing down and asking a grown-up is the smart move."},
+                {t:"Keep tapping until it goes away.",ok:false,why:"Tapping around can buy things by accident."}]},
+        {q:"Your favorite YouTuber says a toy is \"the best toy ever.\" The video is sponsored.",
+          opts:[{t:"It must be the best. They said so!",ok:false,why:"They were paid to say nice things."},
+                {t:"Remember they were paid, and check other reviews or ask a grown-up.",ok:true,why:"Knowing it's an ad helps you decide for yourself."},
+                {t:"Never watch that YouTuber again.",ok:false,why:"You don't have to stop watching. Just know when it's an ad."}]},
+        {q:"A pop-up says: \"You're our 1,000,000th visitor! Click to get your prize!\"",
+          opts:[{t:"Click it! I'm a winner!",ok:false,why:"You didn't enter a contest, so you didn't win one."},
+                {t:"Close it and tell a grown-up.",ok:true,why:"Prize pop-ups are tricks. Some even try to get your password!"},
+                {t:"Type your name and address to claim it.",ok:false,why:"Your name and address are always Shield It!"}]}
+      ]},
+    { type:"reflect", eyebrow:"Exit ticket", title:"Think about it",
+      fields:[
+        {id:"r1", label:"Name one sneaky place where you have seen an ad.", short:"A sneaky place I saw an ad", long:true, required:true},
+        {id:"r2", label:"Which detective question will you ask the next time you see an ad?", short:"My detective question", hint:"Who made this? · What do they want me to do? · How is it trying to make me feel?", required:true},
+        {id:"r3", label:"Bonus: Tell me one thing that happened in your Sora book this week!", short:"Bonus: my book this week", long:true}
+      ]},
+    { type:"finish", eyebrow:"Mission complete!", title:"Turn in your work",
+      html:`<p>Great job, Ad Detective! Your answers are in the box below.</p>`}
+  ]
+};
+
+</script>
+<script>/* Self-paced lesson engine. Expects a global LESSON object. */
+(function(){
+const L = window.LESSON;
+const KEY = "async-" + L.id;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let S = { step:0, inputs:{}, picks:{} };
+try { const saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved && typeof saved === "object") S = Object.assign(S, saved); } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+
+const DEFAULT_CHOICES = [{v:"Real",t:"Looks real"},{v:"Phish",t:"Phish!",bad:true}];
+const DEFAULT_VERDICTS = {Real:"REAL", Phish:"a PHISH"};
+
+function score(step, si){
+  if (!step.items) return null;
+  let right = 0, done = 0;
+  step.items.forEach((it, i) => {
+    const p = S.picks[si + ":" + i];
+    if (p == null) return;
+    done++;
+    if (step.type === "choice") { if (it.opts[p] && it.opts[p].ok) right++; }
+    else if (p === it.a) right++;
+  });
+  return { right, done, total: step.items.length };
+}
+
+function complete(step, si){
+  if (step.type === "welcome" || step.type === "reflect") return (step.fields || []).every(f => !f.required || (S.inputs[f.id] || "").trim());
+  if (step.items) { const sc = score(step, si); return sc.done === sc.total; }
+  return true;
+}
+
+function field(f){
+  const v = esc(S.inputs[f.id] || "");
+  const tag = f.long
+    ? `<textarea id="f-${f.id}" data-f="${f.id}" rows="3" placeholder="${esc(f.placeholder||"")}">${v}</textarea>`
+    : `<input id="f-${f.id}" data-f="${f.id}" type="text" autocomplete="off" placeholder="${esc(f.placeholder||"")}" value="${v}">`;
+  return `<div class="field"><label for="f-${f.id}">${f.label}${f.required?' <span class="req">(required)</span>':''}</label>${f.hint?`<p class="hint">${f.hint}</p>`:''}${tag}</div>`;
+}
+
+function itemsHTML(step, si){
+  if (step.type === "sort") return `<div class="items">${step.items.map((it,i)=>{
+    const p = S.picks[si+":"+i];
+    return `<div class="item ${p!=null?(p===it.a?'ok':'no'):''}"><p class="itext">${it.t}</p>
+      <div class="opts">${step.options.map(o=>`<button type="button" class="opt ${p===o?'picked':''} ${p!=null&&o===it.a?'answer':''}" data-pick="${si}:${i}" data-v="${esc(o)}" ${p!=null?'disabled':''}>${o}</button>`).join("")}</div>
+      ${p!=null?`<p class="fb"><strong>${p===it.a?step.yes||'Correct!':'Not quite. It\'s '+it.a+'.'}</strong> ${it.why}</p>`:''}</div>`;}).join("")}</div>`;
+  if (step.type === "choice") return `<div class="items">${step.items.map((it,i)=>{
+    const p = S.picks[si+":"+i];
+    return `<div class="item ${p!=null?(it.opts[p].ok?'ok':'no'):''}"><p class="itext">${it.q}</p>
+      <div class="opts col">${it.opts.map((o,k)=>`<button type="button" class="opt wide ${p===k?'picked':''} ${p!=null&&o.ok?'answer':''}" data-pick="${si}:${i}" data-v="${k}" ${p!=null?'disabled':''}>${o.t}</button>`).join("")}</div>
+      ${p!=null?`<p class="fb"><strong>${it.opts[p].ok?'Great choice!':'Think again.'}</strong> ${it.opts[p].why}${it.opts[p].ok?'':' '+it.opts.find(o=>o.ok).why}</p>`:''}</div>`;}).join("")}</div>`;
+  if (step.type === "inbox") {
+    const choices = step.choices || DEFAULT_CHOICES, verdicts = step.verdicts || DEFAULT_VERDICTS;
+    return `<div class="items">${step.items.map((m,i)=>{
+    const p = S.picks[si+":"+i];
+    return `<div class="msg ${p!=null?'revealed '+(p===m.a?'ok':'no'):''}">
+      <div class="mhead"><span class="mkind">${m.kind}</span><span class="mfrom">${m.from}</span>${m.subject?`<span class="msub">${m.subject}</span>`:''}</div>
+      <div class="mbody">${m.body}</div>
+      <div class="opts">${choices.map(o=>`<button type="button" class="opt ${o.bad?'phish':'real'} ${p===o.v?'picked':''} ${p!=null&&o.v===m.a?'answer':''}" data-pick="${si}:${i}" data-v="${o.v}" ${p!=null?'disabled':''}>${o.t}</button>`).join("")}</div>
+      ${p!=null?`<div class="fb"><strong>${p===m.a?'You got it!':'Look again.'} This one is ${verdicts[m.a]||m.a}.</strong>${m.flags&&m.flags.length?`<ul>${m.flags.map(f=>`<li>${f}</li>`).join("")}</ul>`:''}<p>${m.why}</p></div>`:''}
+    </div>`;}).join("")}</div>`;
+  }
+  return "";
+}
+
+function summaryText(){
+  const lines = [L.summaryTitle];
+  L.steps.forEach((st, si) => {
+    (st.fields||[]).forEach(f => { if (S.inputs[f.id]) lines.push(`${f.short||f.label}: ${S.inputs[f.id].trim()}`); });
+    if (st.items) { const sc = score(st, si); lines.push(`${st.short}: ${sc.right} out of ${sc.total}`); }
+  });
+  return lines.join("\n");
+}
+
+function render(){
+  const si = S.step, st = L.steps[si], n = L.steps.length;
+  $("#progress").innerHTML = `<div class="pbar"><div style="width:${Math.round((si)/(n-1)*100)}%"></div></div><span>Step ${si+1} of ${n}</span>`;
+  let body = "";
+  if (st.type === "finish") {
+    body = `<div class="wait"><strong>&#9995; Stop here!</strong> We will turn this in <em>together</em>. Wait for ${L.teacher||"your teacher"} to show the steps on the board.</div>
+      ${st.html||""}
+      <label for="summary" class="eyebrow">My answers</label>
+      <textarea id="summary" readonly rows="9">${esc(summaryText())}</textarea>
+      <ol class="steps big">
+        <li><span class="stepnum">Step 1</span><button type="button" class="btn primary" id="copy">Copy my answers</button> <span id="copied" class="copied" role="status"></span></li>
+        <li><span class="stepnum">Step 2</span><a class="btn" id="openclass" href="https://classroom.google.com" target="_blank" rel="noopener">Open Google Classroom &#8599;</a></li>
+        ${L.turnIn.map((t,k)=>`<li><span class="stepnum">Step ${k+3}</span><span class="steptext">${t}</span></li>`).join("")}
+      </ol>
+      <div class="callout">Lost your place? Come back to this tab. Your answers are still here. Click <strong>Copy my answers</strong> again.</div>`;
+  } else {
+    body = (st.html||"") + (st.fields?st.fields.map(field).join(""):"") + itemsHTML(st, si);
+  }
+  const sc = st.items ? score(st, si) : null;
+  $("#card").innerHTML = `<div class="cardhead"><div><div class="eyebrow">${st.eyebrow||""}</div><h2>${st.title}</h2></div>
+      ${"speechSynthesis" in window?`<button type="button" class="listen" id="listen">Read to me</button>`:''}</div>
+    <div id="content">${body}</div>
+    ${sc?`<p class="tally">Score: <strong>${sc.right}</strong> of ${sc.total}</p>`:''}
+    <div class="nav">
+      ${si>0?`<button type="button" class="btn" id="back">Back</button>`:'<span></span>'}
+      ${si<n-1?`<button type="button" class="btn primary" id="next" ${complete(st,si)?'':'disabled'}>${complete(st,si)?'Next':st.items?'Answer all to continue':'Fill in the required boxes'}</button>`:''}
+    </div>`;
+  bind();
+}
+
+function bind(){
+  document.querySelectorAll("[data-f]").forEach(el => el.addEventListener("input", () => {
+    S.inputs[el.dataset.f] = el.value; save();
+    const st = L.steps[S.step], nx = $("#next");
+    if (nx) { const ok = complete(st, S.step); nx.disabled = !ok; nx.textContent = ok ? "Next" : "Fill in the required boxes"; }
+  }));
+  document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => {
+    const st = L.steps[S.step]; const v = st.type === "choice" ? +b.dataset.v : b.dataset.v;
+    S.picks[b.dataset.pick] = v; save(); const y = window.scrollY; render(); window.scrollTo(0, y);
+  });
+  const nx = $("#next"), bk = $("#back");
+  if (nx) nx.onclick = () => { stopTalk(); S.step++; save(); render(); window.scrollTo(0,0); };
+  if (bk) bk.onclick = () => { stopTalk(); S.step--; save(); render(); window.scrollTo(0,0); };
+  const cp = $("#copy");
+  if (cp) cp.onclick = () => {
+    const ta = $("#summary"), msg = $("#copied");
+    const fallback = () => { ta.focus(); ta.select(); msg.textContent = "Selected. Now press Ctrl+C (or Cmd+C) to copy."; };
+    try { navigator.clipboard.writeText(ta.value).then(() => { msg.textContent = "Copied! Now do Step 2."; }, fallback); } catch(e) { fallback(); }
+  };
+  const ls = $("#listen");
+  if (ls) ls.onclick = () => {
+    if (speechSynthesis.speaking) { stopTalk(); return; }
+    const c = $("#card").cloneNode(true);
+    c.querySelectorAll("button,input,textarea,select,.nav,.listen,.tally,a.btn,svg,img").forEach(e => e.remove());
+    try { const u = new SpeechSynthesisUtterance(c.innerText.replace(/\s+/g," ")); u.rate = .95; u.onend = () => { ls.textContent = "Read to me"; }; speechSynthesis.speak(u); ls.textContent = "Stop reading"; } catch(e){}
+  };
+}
+function stopTalk(){ try { speechSynthesis.cancel(); } catch(e){} }
+
+const r = $("#restart");
+if (r) r.onclick = () => {
+  if (r.dataset.confirm) { S = { step:0, inputs:{}, picks:{} }; save(); delete r.dataset.confirm; r.textContent = "Start over"; render(); }
+  else { r.dataset.confirm = "1"; r.textContent = "Tap again to erase my answers"; setTimeout(()=>{ delete r.dataset.confirm; r.textContent = "Start over"; }, 4000); }
+};
+render();
+})();
+</script>
+</body></html>
